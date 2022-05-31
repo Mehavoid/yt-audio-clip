@@ -60,6 +60,6 @@ command "$FFMPEG" \
     -i "$COVER" \
     -i "$AUDIO" \
     "${FFMPEG_ARGS[@]}" \
-    "$FILENAME.mp4" 2>&1
+    "${FILENAME//\//_}.mp4" 2>&1
 
 rm -f "$PAGE" "$COVER"
