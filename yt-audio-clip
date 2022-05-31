@@ -34,9 +34,6 @@ TITLE=$(mediainfo --Inform="General;%Title%" "$AUDIO")
 
 [[ -z "$ARTIST" || -z "$ALBUM" || -z "$TITLE" ]] && exit 1
 
-FILENAME="$ARTIST - $TITLE"
-TMP="/tmp/$FILENAME"
-
 INFO=$(subst "$CARD" ARTIST)
 INFO=$(subst "$INFO" ALBUM)
 INFO=$(subst "$INFO" TITLE)
@@ -45,15 +42,17 @@ STYLE=$(subst "$CSS" ARTWORK)
 HEAD=$(subst "$HTML" STYLE)
 BODY=$(subst "$HEAD" INFO)
 
-PAGE="$TMP.html"
+PAGE="$(mktemp --suffix .html)" || exit 1
 printf '%s\n' "$BODY" | tee "$PAGE"
 
-COVER="$TMP.png"
+COVER="$(mktemp --suffix .png)" || exit 1
 
 command "$PLAYWRIGHT" \
     "${PLAYWRIGHT_ARGS[@]}" \
     "file://$PAGE" \
     "$COVER" 2>&1
+
+FILENAME="$ARTIST - $TITLE"
 
 command "$FFMPEG" \
     -loop 1 \
