@@ -2,9 +2,9 @@
 
 set -o pipefail
 
-CSS='@import"https://fonts.googleapis.com/css?family=Source+Sans+Pro";.content{margin-left:-83px;margin-top:-70px;font-family:"Source Sans Pro", sans-serif;opacity:0.85}p{font-size:3.33em;line-height:1.66em}h1{font-size:3.65em;letter-spacing:2.2px;margin-bottom:-2px}.container{align-items:center;background:linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.9));color:white;display:flex;height:100vh;overflow:hidden;position:relative}.image{background:center/cover;background-image:url("{{ARTWORK}}")}.image.thumb{height:68vmin;margin:3.6vw 10vw 10vw 5.6vw;width:68vmin;transform:perspective(1000px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)}.image.background{-webkit-filter: blur(8px);filter: blur(8px);height:100vh;left:0;position:absolute;top:0;transform:scale(1.5);width:100%;z-index:-1}body{height:100vh;margin:0}'
+CSS='@import"https://fonts.googleapis.com/css?family=Source+Sans+Pro";.content{margin-left:-83px;margin-top:-70px;font-family:"Source Sans Pro", sans-serif;opacity:0.85}p{font-size:3.33em;line-height:1.66em}.title{font-size:3.33em;}.remix{font-size:0.66em;margin:unset;}.container{align-items:center;background:linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.9));color:white;display:flex;height:100vh;overflow:hidden;position:relative}.image{background:center/cover;background-image:url("{{ARTWORK}}")}.image.thumb{height:68vmin;margin:3.6vw 10vw 10vw 5.6vw;width:68vmin;transform:perspective(1000px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)}.image.background{-webkit-filter: blur(8px);filter: blur(8px);height:100vh;left:0;position:absolute;top:0;transform:scale(1.5);width:100%;z-index:-1}body{height:100vh;margin:0}'
 HTML='<!DOCTYPE html><html lang=en><meta charset=UTF-8><title>Cover</title><style>{{STYLE}}</style><div class=container><div class="image background"></div><div class="image thumb"></div><div class=content>{{INFO}}</div></div>'
-CARD='<h1>{{TITLE}}</h1><p>by {{ARTIST}}<br>from {{RELEASE_TYPE}} &laquo;{{ALBUM}}&raquo;</p>'
+CARD='<span class="title">{{TITLE}}<p class="remix">{{REMIX}}</p></span><p>by {{ARTIST}}<br>from {{RELEASE_TYPE}} &laquo;{{ALBUM}}&raquo;</p>'
 
 PLAYWRIGHT="${PLAYWRIGHT:-playwright}"
 PLAYWRIGHT_ARGS=(screenshot --full-page "--viewport-size=1920,1080" --wait-for-timeout=3000)
@@ -34,9 +34,17 @@ TITLE=$(mediainfo --Inform="General;%Title%" "$AUDIO")
 
 [[ -z "$ARTIST" || -z "$ALBUM" || -z "$TITLE" ]] && exit 1
 
+if [[ "$TITLE" == *Remix* ]]; then
+    SS="${TITLE%%(*}"
+    REMIX="${TITLE#$SS}"
+    TITLE="$SS"
+    unset SS
+fi
+
 INFO=$(subst "$CARD" ARTIST)
 INFO=$(subst "$INFO" ALBUM)
 INFO=$(subst "$INFO" TITLE)
+INFO=$(subst "$INFO" REMIX)
 INFO=$(subst "$INFO" RELEASE_TYPE)
 STYLE=$(subst "$CSS" ARTWORK)
 HEAD=$(subst "$HTML" STYLE)
